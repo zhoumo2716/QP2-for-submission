@@ -107,11 +107,11 @@ To give an overall score for a classifier instead of just providing scores at ea
 
 \textbf{1. Dividing the Curve into Left and Right Sides}:
    \begin{itemize}
-      \item \textbf{Left side}: Points where the prediction score \( f(x_i) \geq T \) (the best threshold).
-      \item \textbf{Right side}: Points where \( f(x_i) < T \).
+      \item \textbf{Left side}: Points where the threshold values are bigger or equal to the best threshold value. 
+      \item \textbf{Right side}: Points where the threshold values are smaller than the best threshold value. 
    \end{itemize}
-   This division ensures balanced evaluation across different prediction scores, giving both sides equal importance even if they contain different numbers of points.
-
+   This division aims for a balanced evaluation across different prediction scores, giving equal weight to both sides. Notice that we've slightly modified the definition from the original paper to make it clearer.
+   
 \textbf{2. Sub-dividing MCC Ranges into Sub-ranges}:
    The MCC-F1 curve is split into \textbf{100 sub-ranges} along the MCC axis:
    \[
@@ -127,11 +127,11 @@ To give an overall score for a classifier instead of just providing scores at ea
    where \( X_i \) is the unit-normalized MCC, and \( Y_i \) is the F1 score.
 
 \textbf{4. Averaging Over Sub-ranges}:
-   For each sub-range, calculate the average distance of points within that sub-range:
+   For each sub-range, calculate the average distance of points within that sub-range \textit{j}:
    \[
    \bar{D_j} = \frac{\sum_{i \in \text{sub-range}} D_i}{n_j}
    \]
-   where \( n_j \) is the number of points in the sub-range.
+   where \( n_j \) is the number of points in the sub-range \textit{j}.
 
 \textbf{5. Grand Average Distance}:
    The grand average distance \( D^* \) is calculated as the average of all sub-range mean distances across both left and right sides:
@@ -179,7 +179,7 @@ In summary, MCC-F1 outperforms ROC and PR in many of the situations including th
 \subsection{Highlights, Limitations and Future Improvements}
 Imbalanced datasets are common in the real-world datasets, especially in areas like medicine, genomics, and fraud detection. In these situations, the MCC-F1 curve provides a more accurate and fair way to assess classifier performance. This is a key contribution of the paper. Additionally, MCC-F1 curve presents a straightforward view to identify the best threshold value. Identifying the best threshold for a classifier is critical in real-world applications, especially when the cost of false positives and false negatives is unequal. The MCC-F1 metric also simplifies comparisons between classifiers by offering a single value, the MCC-F1 metric, which can summarize overall performance. While the MCC-F1 curve and metric provide clear advantages, there are some limitations. \\
 
-One limitation of the MCC-F1 analysis is the \textbf{lack of theoretical justification}. This includes elaboration on why combining MCC and F1 works as an effective metric. The paper introduces this combination and claims it works based on the nature of MCC and F1 metrics, but does not provide enough detail to explain why this metric is valid or superior, how is it better than just using MCC or F1 metric alone. Additionally, the MCC-F1 metric \textbf{formula leaves some ambiguity}. For instance, the division based on the best prediction score is unclear, as achieving a better score than the best prediction is not possible. Furthermore, in extreme cases where one side of the threshold contains no values, the paper does not specify how to handle it. Should we simply add a zero for the missing side and divide by two, or rely solely on the available side's value? It also lacks guidance on the optimal number of subranges division for balancing accuracy and computational cost, making it unclear when dividing into many subranges adds value. Dividing into too many subranges, such as 100 when fewer threshold values exist, seems excessive and unnecessary. These gaps in the explanation create uncertainty around how to apply the metric in practice.\\
+One limitation of the MCC-F1 analysis is the \textbf{lack of theoretical justification}. This includes elaboration on why combining MCC and F1 works as an effective metric. The paper introduces this combination and claims it works based on the nature of MCC and F1 metrics, but does not provide enough detail to explain why this metric is valid or superior, how is it better than just using MCC or F1 metric alone. Additionally, the MCC-F1 metric formula \textbf{leaves some ambiguity}. For instance, the division of the left and right side in metric calculation is unclear. The original paper stated that the division is based on the best prediction score, but achieving a score better than the best score is not possible. This would result in the left side having only a single point, which corresponds to the threshold with the best prediction score. Furthermore, in extreme cases where one side of the threshold contains no values, the paper does not specify how to handle it. Should we simply add a zero for the missing side and divide by two, or rely solely on the available side's value? It also lacks guidance on the optimal number of subranges division for balancing accuracy and computational cost, making it unclear when dividing into many subranges adds value. Dividing into too many subranges, such as 100 when fewer threshold values exist, seems excessive and unnecessary. These gaps in the explanation create uncertainty around how to apply the metric in practice.\\
 
 The limitations of the applications of MCC-F1 curve include the \textbf{complexity of interpretation}. While it combines two important metrics, the complexity of the structure also increases. In fact, MCC itself is often viewed as harder to interpret than more straightforward metrics like AUC and PR. For practitioners who preferred interpretable methods, the complexity in the MCC-F1 metric potentially requires additional explanation and interpretation of its outcome. Another challenge is its \textbf{scalability to extend to multi-class problems}. The paper focuses solely on binary classification, and adapting the MCC-F1 curve for multi-class classification would require modifications for the re-structuring of the metric, such as calculating MCC and F1 for each class and then averaging or aggregating the results. Since this metric requires more computation than just comparing existing evaluations, it also adds complexity when extending to a broader range of use cases. Additionally, the paper's findings are heavily based on \textbf{simulation data}. How well the MCC-F1 curve performs in real-world datasets remains unknown. We propose several directions for future improvements and further analysis based on the above limitations.
 \begin{enumerate}
@@ -236,13 +236,32 @@ As shown in the plots, the percentage change for \textbf{AUROC} remains quite st
 
 To investigate further, we conduct experiment 3, where we don't use any specific classifier but simply plot the different metrics as the elements in the confusion matrix (\textit{TP}, \textit{TN}, \textit{FP}, \textit{FN}) are varied. In each plot, we hold three elements constant and vary one. We create four plots in total, allowing us to examine whether certain metrics are sensitive to changes in specific confusion matrix elements. The datasets are not kept at a consistent size to allow for imbalanced scenarios, which is why only one element is changed at a time. The results are shown in Figure \ref{simulation3}.\\
 
-In this experiment, we break down the \textbf{MCC-F1}, \textbf{ROC}, and \textbf{PR} analysis by plotting \textbf{MCC} and \textbf{F1 score} separately, along with \textbf{precision}, \textbf{recall}, and \textbf{FPR}. As the results indicate, \textbf{FPR} is not sensitive to changes in \textit{TP}, while \textbf{precision}, \textbf{recall}, and \textbf{F1 score} are not sensitive to changes in \textit{TN}. Additionally, \textbf{F1 score} is not sensitive to changes in \textit{FP}, and \textbf{precision} and \textbf{FPR} are not sensitive to changes in \textit{FN}. These findings can also be inferred from the formulas that compose these metrics.\\
+In this experiment, we break down the \textbf{MCC-F1}, \textbf{ROC}, and \textbf{PR} analysis by plotting \textbf{MCC} and \textbf{F1 score} separately, as well as \textbf{precision}, \textbf{recall}, and \textbf{FPR}. The definitions are given below: 
+\[
+\text{Precision} = \frac{TP}{TP + FP}
+\]
+\[
+\text{Recall} = \frac{TP}{TP + FN}
+\]
+\[
+\text{FPR} = \frac{FP}{FP + TN}
+\]
+\[
+\text{F1} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}
+\]
+\[
+\text{MCC} = \frac{(TP \times TN) - (FP \times FN)}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+\]
+\\
+As the results indicate, \textbf{FPR} is not sensitive to changes in \textit{TP}, while \textbf{precision}, \textbf{recall}, and \textbf{F1 score} are not sensitive to changes in \textit{TN}. Additionally, \textbf{F1 score} is not sensitive to changes in \textit{FP}, and \textbf{precision} and \textbf{FPR} are not sensitive to changes in \textit{FN}. These findings can also be inferred from the formulas that compose these metrics.\\
 
 Due to the structure of the \textbf{ROC} curve, which plots \textbf{recall} against \textbf{FPR}, it becomes clear why \textbf{ROC} does not perform well with negatively skewed datasets. In imbalanced datasets, especially when \textit{TN} greatly outnumbers \textit{TP}, even a rise in \textit{FP} may not significantly affect \textbf{FPR} due to the large number of negatives. Moreover, the classifier may increase \textit{TP} by lowering the threshold, but this will also increase \textit{FP}, which can be offset by the large number of \textit{TN}. If the classifier correctly identifies most positives, the \textbf{TPR} may appear high, which can be misleading when combined with the low \textbf{FPR}. \\
 
 In contrast, the \textbf{PR} curve performs better in negatively skewed datasets because it emphasizes the classifier's ability to predict the positive (minority) class. However, the \textbf{PR} curve loses its effectiveness in positively imbalanced datasets. This is because precision and recall behave differently: with few negative instances, \textit{FP} has less impact on precision, and \textit{FN} has less impact on recall. Even if a classifier makes several \textit{FP}s, precision will not drop significantly because the total number of positives is large. Similarly, recall remains high as the number of \textit{FN} is small. Consequently, the \textbf{PR} curve becomes less informative in distinguishing between classifiers. \\
 
-The \textbf{F1 score} faces similar advantages and challenges in both negatively and positively imbalanced datasets since it focuses on the positive class. However, \textbf{MCC} is sensitive to misclassifications in both classes and only achieves a high value when both \textit{TP} and \textit{TN} are high, and \textit{FP} and \textit{FN} are low. It provides a more comprehensive assessment of classifier performance across both the majority and minority classes. Overall, \textbf{MCC-F1} analysis offers more meaningful insights than \textbf{ROC} or \textbf{PR} analysis.
+The \textbf{F1 score} faces similar advantages and challenges in both negatively and positively imbalanced datasets since it focuses on the positive class. However, \textbf{MCC} is sensitive to misclassifications in both classes and only achieves a high value when both \textit{TP} and \textit{TN} are high, and \textit{FP} and \textit{FN} are low. It provides a more comprehensive assessment of classifier performance across both the majority and minority classes. Overall, \textbf{MCC-F1} analysis offers more meaningful insights than \textbf{ROC} or \textbf{PR} analysis. The results are shown in figure \ref{simulation4}.  \\
+
+It’s important to note that the choice of metrics is often depended on the specific task and its purpose. The \textbf{F1 score} (with $\beta=1$) finds a balance between Precision and Recall, making it useful when both false positives and false negatives are equally important in the analysis task. However, changing the $\beta$  value in the F-score can shift that balance. A higher $\beta$ (like \textbf{F2}) would place more weight on the Recall, which is ideal when missing positives is more costly in the analysis scenario. On the other hand, a lower $\beta$ (such as \textbf{F0.5}) would place more weight on the Precision, which is helpful when avoiding false positives is more critical in the analysis scenario. One can incorporate different F-scores in the MCC-F1 analysis to bring out different strengths and weaknesses of the classifiers according to the problem setting.
 \begin{figure}[hbt!]
     \centering
     \includegraphics[scale=0.35]{Report/Figure/simulation3.jpg}
@@ -275,7 +294,7 @@ Finally, the results for all different classifiers and datasets are plotted in F
 
 
 \subsection{Summary of the study}
-In this extensional study, we explore beyond the original paper for the effectiveness of the MCC-F1 metric in contrast to other metrics, such as ROC and PR, through a variety of experiment simulations, highlighting its advantage in imbalanced classification problems. And we extend our exploration to the discussion point on whether the balance between positive and negative classes affects the choice for optimal classifier. In other words, if there is a single classifier that can consistently outperform others regardless of class distribution in the dataset. Based on our findings, the answer is no - since class balance does influence the classifier's performance substantially, there is no single classifier that can universally outperform across all datasets.
+In this extensional study, we explore beyond the original paper for the effectiveness of the MCC-F1 metric in contrast to other metrics, such as ROC and PR, through a variety of experiment simulations, highlighting its advantage in imbalanced classification problems. However, the best metric always depends on the specific goals of the task.  We extend our exploration to the discussion point on whether the balance between positive and negative classes affects the choice for optimal classifier in the second subsection. In other words, we want to know if there is a single classifier that can consistently outperform others regardless of class distribution in the dataset. Based on our findings, the answer is no - since class balance does influence the classifier's performance substantially, there is no single classifier that can universally outperform across all datasets. 
 
 \clearpage
 \printbibliography
