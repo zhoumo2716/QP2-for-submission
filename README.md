@@ -1,5 +1,5 @@
 # QP2 Project
-Project directory and LaTeX documents for Xuan Li UBC STAT 548 Qualifying Paper report 2. Qualifying Paper is on [ The MCC-F1 curve: a performance evaluation technique for binary classification ](https://www.sciencedirect.com/science/article/pii/S0167947317302384](https://arxiv.org/abs/2006.11278). 
+Project directory and LaTeX documents for Xuan Li UBC STAT 548 Qualifying Paper report 2. Qualifying Paper is on [ The MCC-F1 curve: a performance evaluation technique for binary classification ](https://arxiv.org/abs/2006.11278). 
 
 
 ## Details on directory usage
